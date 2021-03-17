@@ -1,0 +1,4 @@
+{
+	"mongoURI": "mongodb+srv://Adarsh:1234@cluster0.2zo0m.mongodb.net/saorsaDatabase?retryWrites=true&w=majority",
+	"jwtSecret": "mysecrettoken"
+}
