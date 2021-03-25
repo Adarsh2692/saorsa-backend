@@ -6,6 +6,8 @@ const jwt = require("jsonwebtoken");
 const config = require("config");
 const { check, validationResult } = require("express-validator");
 const User = require("../../models/User");
+const Profile = require("../../models/Profile");
+const Mood = require("../../models/Mood");
 
 //route    POST api/user
 //desc     Register user
@@ -65,6 +67,14 @@ router.post(
 			user.password = await bcrypt.hash(password, salt);
 
 			await user.save();
+			const profileFields = {};
+			profileFields.user = user.id;
+			const profile = new Profile(profileFields);
+			profile.save();
+			const moodFields = {};
+			moodFields.user = user.id;
+			const mood = new Mood(moodFields);
+			mood.save();
 
 			const payload = {
 				user: {

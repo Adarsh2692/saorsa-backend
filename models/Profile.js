@@ -8,21 +8,6 @@ const ProfileSchema = new mongoose.Schema({
 	bio: {
 		type: String,
 	},
-	moodArray: [{
-		mood: {
-			type: String,
-		},
-		moodImage: {
-			type: String,
-		},
-		rating: {
-			type: Number,
-		},
-		date: {
-			type: Date,
-			default: Date.now,
-		},
-	}, ],
 	coverImage: {
 		type: String,
 	},
