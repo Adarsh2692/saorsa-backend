@@ -5,17 +5,31 @@ const router = express.Router();
 const auth = require("../../middleware/auth");
 const adminAuth = require("../../middleware/adminAuth");
 const Course = require("../../models/Course");
+const multerFunc = require("../../middleware/multer");
+const multerUploads = multerFunc.multerUploads;
+const dataUri = multerFunc.dataUri;
+const cloudinary = require("../../config/cloudinaryConfig");
+const uploader = cloudinary.uploader;
+const cloudinaryConfig = cloudinary.cloudinaryConfig;
 
 //@route   POST api/courses/new
 //@desc    Test route
 //@access  Private
-router.post("/new", auth, adminAuth, async (req, res) => {
+router.post("/new",multerUploads, async (req, res) => {
     const {
         courseName,
-        courseImage,
         musicLink,
         exerciseLink
     } = req.body;
+
+    let courseImage="";
+
+    if (req.file) {
+			const file = dataUri(req).content;
+			await uploader.upload(file).then((result) => {
+				courseImage = result.url;
+			});
+		}
 
     //build newCourse object
     const newCourse = {

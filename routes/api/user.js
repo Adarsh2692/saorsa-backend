@@ -8,6 +8,34 @@ const { check, validationResult } = require("express-validator");
 const User = require("../../models/User");
 const Profile = require("../../models/Profile");
 const Mood = require("../../models/Mood");
+const nodemailer = require("nodemailer");
+const auth = require("../../middleware/auth");
+
+const password = process.env.myPass;
+
+const sendEmail = (email, uniqueString) => {
+	const transporter = nodemailer.createTransport({
+		service: "gmail",
+		auth: {
+			user: "addy9769@gmail.com",
+			pass: password,
+		},
+	});
+	const mailOptions = {
+		from: "addy9769@gmail.com",
+		to: email,
+		subject: "Verification Email",
+		html: `Press<a href=http://localhost:4000/api/user/verify/${uniqueString}>here</a>to verify your account`,
+	};
+
+	transporter.sendMail(mailOptions, (error, info) => {
+		if (error) {
+			console.log(error);
+		} else {
+			console.log("Email Sent: " + info.response);
+		}
+	});
+};
 
 //route    POST api/user
 //desc     Register user
@@ -82,6 +110,9 @@ router.post(
 				},
 			};
 
+			const uniqueString = user.id;
+			sendEmail(email, uniqueString);
+
 			jwt.sign(
 				payload,
 				config.get("jwtSecret"),
@@ -101,5 +132,35 @@ router.post(
 		}
 	}
 );
+
+//route    GET api/user/verify/:uniqueString
+//desc     Send verification link
+//@access  Public
+router.get("/verify/:uniqueString", async(req,res)=>{
+	try {
+		const user=await User.findOne({
+			_id:req.params.uniqueString
+		})
+		user.confirmed=true;
+		user.save();
+		res.redirect("http://localhost:3000/login");
+	} catch (err) {
+		console.log(err.message);
+		res.status(500).send("Server Error");	
+	}
+})
+
+//route    POST api/user/resend
+//desc     Send verification link
+//@access  Public
+router.post("/resend",auth,async(req,res)=>{
+	try {
+		const user = await User.findById(req.user.id);
+		sendEmail(user.email,user.id);
+		res.send("Email Sent")
+	} catch (err) {
+		res.send(err)
+	}
+})
 
 module.exports = router;

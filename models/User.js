@@ -18,8 +18,9 @@ const UserSchema = new mongoose.Schema({
 		type: Boolean,
 		default: false,
 	},
-	avatar: {
-		type: String,
+	confirmed: {
+		type: Boolean,
+		default: false,
 	},
 	date: {
 		type: Date,

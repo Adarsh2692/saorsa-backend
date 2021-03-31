@@ -10,6 +10,9 @@ const StepSchema = new mongoose.Schema({
 	headingText: {
 		type: String,
 	},
+	image: {
+		type: String,
+	},
 	courses: [
 		{
 			img: {

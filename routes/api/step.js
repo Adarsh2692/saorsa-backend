@@ -7,18 +7,30 @@ const { check, validationResult } = require("express-validator");
 const User = require("../../models/User");
 const Profile = require("../../models/Profile");
 const Step = require("../../models/Step");
+const multerFunc = require("../../middleware/multer");
+const multerUploads = multerFunc.multerUploads;
+const dataUri = multerFunc.dataUri;
+const cloudinary = require("../../config/cloudinaryConfig");
+const uploader = cloudinary.uploader;
+const cloudinaryConfig = cloudinary.cloudinaryConfig;
 
 //@route    POST api/step/create
 //@desc     Update user profile
 //@access   Private
-router.post("/create", async (req, res) => {
-	const { name, title, headingText } = req.body;
+router.post("/create", multerUploads, async (req, res) => {
+	const { name, title, headingText, image } = req.body;
 
 	//Build step object
 	const stepFields = {};
 	if (name) stepFields.name = name;
 	if (title) stepFields.title = title;
 	if (headingText) stepFields.headingText = headingText;
+	if (req.file) {
+		const file = dataUri(req).content;
+		await uploader.upload(file).then((result) => {
+			stepFields.image = result.url;
+		});
+	}
 
 	try {
 		let step = await Step.findOne({ name: req.name });
@@ -38,14 +50,19 @@ router.post("/create", async (req, res) => {
 //@route    POST api/step/:step/courses
 //@desc     Update user profile
 //@access   Private
-router.post("/:step/courses", async (req, res) => {
+router.post("/:step/courses", multerUploads, async (req, res) => {
 	const { img, name } = req.body;
 
 	//Build course object
 	const stepFields = {};
 	stepFields.courses = {};
 	if (name) stepFields.courses.name = name;
-	if (img) stepFields.courses.img = img;
+	if (req.file) {
+		const file = dataUri(req).content;
+		await uploader.upload(file).then((result) => {
+			stepFields.courses.img = result.url;
+		});
+	}
 
 	try {
 		let step = await Step.findOne({ name: req.params.step });
@@ -68,11 +85,16 @@ router.post("/:step/courses", async (req, res) => {
 //@route    POST api/step/:step/:course/data
 //@desc     Update user profile
 //@access   Private
-router.post("/:step/:course/data", async (req, res) => {
+router.post("/:step/:course/data", multerUploads, async (req, res) => {
 	const { title, description, audio, img } = req.body;
 	const stepFields = {};
 	if (title) stepFields.title = title;
-	if (img) stepFields.img = img;
+	if (req.file) {
+		const file = dataUri(req).content;
+		await uploader.upload(file).then((result) => {
+			stepFields.img = result.url;
+		});
+	}
 	if (description) stepFields.description = description;
 	if (audio) stepFields.audio = audio;
 
@@ -80,13 +102,13 @@ router.post("/:step/:course/data", async (req, res) => {
 		let step = await Step.findOne({
 			name: req.params.step,
 		});
-		res.json(step.courses);
-		step.courses.forEach(e=>{
-			if(e.name===req.params.course){
+		step.courses.forEach((e) => {
+			if (e.name === req.params.course) {
 				e.data.push(stepFields);
 			}
-		})
+		});
 		await step.save();
+		res.send(stepFields);
 	} catch (err) {
 		console.error(error.message);
 		res.status(500).send("Server Error");
@@ -96,13 +118,13 @@ router.post("/:step/:course/data", async (req, res) => {
 //@route    GET api/step
 //@desc     Update user profile
 //@access   Private
-router.get("/",async (req,res)=>{
+router.get("/", async (req, res) => {
 	try {
 		const step = await Step.find();
 		res.json(step);
 	} catch (err) {
 		res.status(500).send(err.message);
 	}
-})
+});
 
 module.exports = router;

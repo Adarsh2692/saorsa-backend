@@ -6,6 +6,12 @@ const auth = require("../../middleware/auth");
 const { check, validationResult } = require("express-validator");
 const User = require("../../models/User");
 const Profile = require("../../models/Profile");
+const multerFunc = require("../../middleware/multer");
+const multerUploads = multerFunc.multerUploads;
+const dataUri = multerFunc.dataUri;
+const cloudinary = require("../../config/cloudinaryConfig");
+const uploader = cloudinary.uploader;
+const cloudinaryConfig = cloudinary.cloudinaryConfig;
 
 //@route    GET api/profile/me
 //@desc     Get current users profile
@@ -14,7 +20,7 @@ router.get("/me", auth, async (req, res) => {
 	try {
 		const profile = await Profile.findOne({
 			user: req.user.id,
-		}).populate("user", ["name","email", "avatar"]);
+		}).populate("user", ["name", "email"]);
 
 		if (!profile) {
 			return res.status(400).json({ msg: "There is no profile for this user" });
@@ -30,38 +36,37 @@ router.get("/me", auth, async (req, res) => {
 //@route    POST api/profile
 //@desc     Update user profile
 //@access   Private
-router.post(
-	"/", auth,
-	async (req, res) => {
-		const {
-			bio,
-            coverImage
-		} = req.body;
+router.post("/", auth, multerUploads, async (req, res) => {
+	const { bio, coverImage } = req.body;
 
-		//Build profile object
-		const profileFields = {};
-		profileFields.user = req.user.id;
-		if (bio) profileFields.bio = bio;
-		if (coverImage) profileFields.coverImage = coverImage;
-
-		try {
-			let profile = await Profile.findOne({ user: req.user.id });
-
-			if (profile) {
-				//Update profile
-				profile = await Profile.findOneAndUpdate(
-					{ user: req.user.id },
-					{ $set: profileFields },
-					{ new: true }
-				);
-				return res.json(profile);
-			}
-		} catch (err) {
-			console.error(error.message);
-			res.status(500).send("Server Error");
-		}
+	//Build profile object
+	let profileFields = {};
+	profileFields.user = req.user.id;
+	if (bio) profileFields.bio = bio;
+	if (req.file) {
+		const file = dataUri(req).content;
+		await uploader.upload(file).then((result) => {
+			profileFields.coverImage = result.url;
+		});
 	}
-);
+
+	try {
+		let profile = await Profile.findOne({ user: req.user.id });
+
+		if (profile) {
+			//Update profile
+			profile = await Profile.findOneAndUpdate(
+				{ user: req.user.id },
+				{ $set: profileFields },
+				{ new: true }
+			);
+			return res.json(profileFields);
+		}
+	} catch (err) {
+		console.error(error.message);
+		res.status(500).send("Server Error");
+	}
+});
 
 //@route    GET api/profile
 //@desc     Get all profiles
@@ -98,3 +103,25 @@ router.get("/user/:user_id", async (req, res) => {
 });
 
 module.exports = router;
+// const upload = multer({
+// 	dest:
+// 		"uploads",
+// }).single("demo_image");
+
+// router.post("/image", (req, res) => {
+// 	upload(req, res, (err) => {
+// 		if (err) {
+// 			res.status(400).send("Something went wrong!");
+// 		}
+// 		res.send(req.file);
+// 	});
+// });
+
+// router.get("/image", (req, res) => {
+// 	upload(req, res, (err) => {
+// 		if (err) {
+// 			res.status(400).send("Something went wrong!");
+// 		}
+// 		res.send(req.file);
+// 	});
+// });

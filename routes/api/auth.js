@@ -5,8 +5,10 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const config = require("config");
 const { check, validationResult } = require("express-validator");
-
 const User = require("../../models/User");
+const nodemailer = require("nodemailer");
+
+const password=process.env.myPass;
 
 //@route    GET api/auth
 //@desc     Get logged in user
@@ -66,6 +68,21 @@ router.post(
 					],
 				});
 			}
+
+			// const mailOptions = {
+			// 	from: "addy9769@gmail.com",
+			// 	to: "adarsh7506774609@gmail.com",
+			// 	subject: "First email",
+			// 	text: "that's easy",
+			// };
+
+			// transporter.sendMail(mailOptions, (error, info) => {
+			// 	if (error) {
+			// 		console.log(error);
+			// 	} else {
+			// 		console.log("Email Sent: " + info.response);
+			// 	}
+			// });
 
 			const payload = {
 				user: {
