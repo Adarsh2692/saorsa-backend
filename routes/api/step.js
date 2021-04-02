@@ -15,16 +15,19 @@ const uploader = cloudinary.uploader;
 const cloudinaryConfig = cloudinary.cloudinaryConfig;
 
 //@route    POST api/step/create
-//@desc     Update user profile
-//@access   Private
+//@desc     Create a step
+//@access   Admin access *for now we arent using admin auth to keep things simple
 router.post("/create", multerUploads, async (req, res) => {
-	const { name, title, headingText, image } = req.body;
+	
+	const { name, title, headingText } = req.body;
 
 	//Build step object
 	const stepFields = {};
 	if (name) stepFields.name = name;
 	if (title) stepFields.title = title;
 	if (headingText) stepFields.headingText = headingText;
+
+	//Here we accept a file and upload it to clouinary, get a link for that and save it to db
 	if (req.file) {
 		const file = dataUri(req).content;
 		await uploader.upload(file).then((result) => {
@@ -35,6 +38,7 @@ router.post("/create", multerUploads, async (req, res) => {
 	try {
 		let step = await Step.findOne({ name: req.name });
 
+		//Every step should have unique name, eg:Step1, Step2
 		if (step) {
 			return res.status(400).send("Step already exists");
 		}
@@ -48,15 +52,18 @@ router.post("/create", multerUploads, async (req, res) => {
 });
 
 //@route    POST api/step/:step/courses
-//@desc     Update user profile
-//@access   Private
+//@desc     Add a course in given step
+//@access   Admin access *for now we arent using admin auth to keep things simple
 router.post("/:step/courses", multerUploads, async (req, res) => {
-	const { img, name } = req.body;
+	
+	const { name } = req.body;
 
 	//Build course object
 	const stepFields = {};
 	stepFields.courses = {};
 	if (name) stepFields.courses.name = name;
+
+	//Here we accept a file and upload it to clouinary, get a link for that and save it to db
 	if (req.file) {
 		const file = dataUri(req).content;
 		await uploader.upload(file).then((result) => {
@@ -70,6 +77,8 @@ router.post("/:step/courses", multerUploads, async (req, res) => {
 		if (!step) {
 			return res.status(400).send("Step doesn't exist");
 		}
+
+		//push new course to the course array of given step
 		step = await Step.findOneAndUpdate(
 			{ name: req.params.step },
 			{ $push: stepFields },
@@ -83,12 +92,16 @@ router.post("/:step/courses", multerUploads, async (req, res) => {
 });
 
 //@route    POST api/step/:step/:course/data
-//@desc     Update user profile
+//@desc     Add data to the given course of given step
 //@access   Private
 router.post("/:step/:course/data", multerUploads, async (req, res) => {
-	const { title, description, audio, img } = req.body;
+	
+	const { title, description, audio } = req.body;
+	
 	const stepFields = {};
 	if (title) stepFields.title = title;
+
+	//Here we accept a file and upload it to clouinary, get a link for that and save it to db
 	if (req.file) {
 		const file = dataUri(req).content;
 		await uploader.upload(file).then((result) => {
@@ -99,14 +112,23 @@ router.post("/:step/:course/data", multerUploads, async (req, res) => {
 	if (audio) stepFields.audio = audio;
 
 	try {
+		//find the given step
 		let step = await Step.findOne({
 			name: req.params.step,
 		});
+
+		//If given step doesn't exist
+		if(!step){
+			return res.status(400).send("Step doesn't exist");
+		}
+
+		//find a course in the step with name of given course and push the data object in it
 		step.courses.forEach((e) => {
 			if (e.name === req.params.course) {
 				e.data.push(stepFields);
 			}
 		});
+
 		await step.save();
 		res.send(stepFields);
 	} catch (err) {
@@ -116,8 +138,8 @@ router.post("/:step/:course/data", multerUploads, async (req, res) => {
 });
 
 //@route    GET api/step
-//@desc     Update user profile
-//@access   Private
+//@desc     Get all steps
+//@access   Public
 router.get("/", async (req, res) => {
 	try {
 		const step = await Step.find();

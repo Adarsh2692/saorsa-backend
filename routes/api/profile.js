@@ -14,7 +14,7 @@ const uploader = cloudinary.uploader;
 const cloudinaryConfig = cloudinary.cloudinaryConfig;
 
 //@route    GET api/profile/me
-//@desc     Get current users profile
+//@desc     Get current user's profile
 //@access   Private
 router.get("/me", auth, async (req, res) => {
 	try {
@@ -43,6 +43,8 @@ router.post("/", auth, multerUploads, async (req, res) => {
 	let profileFields = {};
 	profileFields.user = req.user.id;
 	if (bio) profileFields.bio = bio;
+
+	//Here we accept a file and upload it to clouinary, get a link for that and save it to db
 	if (req.file) {
 		const file = dataUri(req).content;
 		await uploader.upload(file).then((result) => {
@@ -103,7 +105,8 @@ router.get("/user/:user_id", async (req, res) => {
 });
 
 module.exports = router;
-// const upload = multer({
+
+//const upload = multer({
 // 	dest:
 // 		"uploads",
 // }).single("demo_image");

@@ -8,8 +8,6 @@ const { check, validationResult } = require("express-validator");
 const User = require("../../models/User");
 const nodemailer = require("nodemailer");
 
-const password=process.env.myPass;
-
 //@route    GET api/auth
 //@desc     Get logged in user
 //@access   Public
@@ -43,9 +41,7 @@ router.post(
 		const { email, password } = req.body;
 
 		try {
-			let user = await User.findOne({
-				email,
-			});
+			let user = await User.findOne({ email });
 
 			if (!user) {
 				return res.status(400).json({
@@ -55,6 +51,10 @@ router.post(
 						},
 					],
 				});
+			}
+
+			if (!user.confirmed) {
+				return res.status(403).send("Email not authenticated");
 			}
 
 			const isMatch = await bcrypt.compare(password, user.password);
@@ -68,21 +68,6 @@ router.post(
 					],
 				});
 			}
-
-			// const mailOptions = {
-			// 	from: "addy9769@gmail.com",
-			// 	to: "adarsh7506774609@gmail.com",
-			// 	subject: "First email",
-			// 	text: "that's easy",
-			// };
-
-			// transporter.sendMail(mailOptions, (error, info) => {
-			// 	if (error) {
-			// 		console.log(error);
-			// 	} else {
-			// 		console.log("Email Sent: " + info.response);
-			// 	}
-			// });
 
 			const payload = {
 				user: {
@@ -100,6 +85,7 @@ router.post(
 					if (err) throw err;
 					res.send({
 						token,
+						user,
 					});
 				}
 			);

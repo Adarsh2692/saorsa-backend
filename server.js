@@ -8,6 +8,7 @@ const dataUri = multerFunc.dataUri;
 const cloudinary = require("./config/cloudinaryConfig");
 const uploader = cloudinary.uploader;
 const cloudinaryConfig = cloudinary.cloudinaryConfig;
+const passport = require("passport");
 
 const app = express();
 
@@ -32,8 +33,12 @@ app.use(
 // 	res.sendFile(path.join(__dirname, "./client/public/index.html"));
 // });
 
-app.get("/", function (req, res) {
-	res.sendFile(path.join(__dirname, "./client/public/index.html"));
+// app.get("/", function (req, res) {
+// 	res.sendFile(path.join(__dirname, "./client/public/index.html"));
+// });
+
+app.get("/", (req, res) => {
+	res.send("Server running");
 });
 
 app.post("/uploads", multerUploads, (req, res) => {
@@ -43,14 +48,14 @@ app.post("/uploads", multerUploads, (req, res) => {
 			.upload(file)
 			.then((result) => {
 				const image = result.url;
-                console.log(image);
+				console.log(image);
 				return res.status(200).json({
 					message: "Your image has been uploded successfully to cloudinary",
 					data: {
 						image,
 					},
 					result,
-                    image
+					image,
 				});
 			})
 			.catch((err) =>

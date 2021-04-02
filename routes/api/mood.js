@@ -12,9 +12,7 @@ const Mood = require("../../models/Mood");
 router.post("/new", auth, async (req, res) => {
 	const { mood, rating, date } = req.body;
 
-	//build newMood object
-
-	//Build profile object
+	//build new Mood object
 
 	const moodFields = {};
 	moodFields.moodArray = {};
@@ -36,18 +34,6 @@ router.post("/new", auth, async (req, res) => {
 			return res.json(currentMood);
 		}
 
-		//Create
-		// profile = new Profile(moodFields);
-		// await profile.save();
-		// res.json(profile);
-
-		//add this mood to database
-
-		// const latestMood = new Mood(newMood);
-
-		// await latestMood.save();
-
-		// res.json(latestMood);
 	} catch (err) {
 		console.error(err.message);
 		res.status(500).send("Server Error");

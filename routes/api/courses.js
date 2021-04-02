@@ -16,40 +16,37 @@ const cloudinaryConfig = cloudinary.cloudinaryConfig;
 //@desc    Test route
 //@access  Private
 router.post("/new",multerUploads, async (req, res) => {
-    const {
-        courseName,
-        musicLink,
-        exerciseLink
-    } = req.body;
+	const { courseName, musicLink, exerciseLink } = req.body;
 
-    let courseImage="";
+	let courseImage = "";
 
-    if (req.file) {
-			const file = dataUri(req).content;
-			await uploader.upload(file).then((result) => {
-				courseImage = result.url;
-			});
-		}
+	//Here we accept a file and upload it to clouinary, get a link for that and save it to db
+	if (req.file) {
+		const file = dataUri(req).content;
+		await uploader.upload(file).then((result) => {
+			courseImage = result.url;
+		});
+	}
 
-    //build newCourse object
-    const newCourse = {
-        courseName,
-        courseImage,
-        musicLink,
-        exerciseLink,
-    };
+	//build newCourse object
+	const newCourse = {
+		courseName,
+		courseImage,
+		musicLink,
+		exerciseLink,
+	};
 
-    try {
-        //add this course to database
-        const latestCourse = new Course(newCourse);
+	try {
+		//add this course to database
+		const latestCourse = new Course(newCourse);
 
-        await latestCourse.save();
+		await latestCourse.save();
 
-        res.json(latestCourse);
-    } catch (err) {
-        console.error(error.message);
-        res.status(500).send("Server Error");
-    }
+		res.json(latestCourse);
+	} catch (err) {
+		console.error(error.message);
+		res.status(500).send("Server Error");
+	}
 });
 
 //@route   GET api/courses/all
