@@ -10,34 +10,53 @@ const Profile = require("../../models/Profile");
 const Mood = require("../../models/Mood");
 const nodemailer = require("nodemailer");
 const auth = require("../../middleware/auth");
+const { google } = require("googleapis");
 
 const password = process.env.myPass;
+const cid = process.env.cid;
+const csec = process.env.csec;
+const ruri = process.env.ruri;
+const rtoken ="1//041ZL_dCBnXoqCgYIARAAGAQSNwF-L9IrwEaPHyKv6x5NjUYwBZRMHMFW6ocnsANoGF9kgxv5BfX1vK4F41qt88fTCWiZalcihHc";
+
+const oAuth2Client = new google.auth.OAuth2(cid, csec, ruri);
+oAuth2Client.setCredentials({ refresh_token: rtoken });
 
 //Function to send email using nodemailer
-const sendEmail = (email, uniqueString) => {
-	//Account details of the sender
-	const transporter = nodemailer.createTransport({
-		service: "gmail",
-		auth: {
-			user: "addy9769@gmail.com",
-			pass: password,
-		},
-	});
-	//Email sender
-	const mailOptions = {
-		from: "addy9769@gmail.com",
-		to: email,
-		subject: "Verification Email",
-		html: `Press <button><a href=http://localhost:4000/api/user/verify/${uniqueString}>here</a></button> to verify your account`,
-	};
+const sendEmail = async (email, uniqueString) => {
+	try {
+		//Account details of the sender
+		const accessToken = await oAuth2Client.getAccessToken();
+		const transporter = nodemailer.createTransport({
+			service: "gmail",
+			auth: {
+				type: "OAuth2",
+				user: "adarsh7506774609@gmail.com",
+				clientId: cid,
+				clientSecret: csec,
+				refreshToken: rtoken,
+				accessToken: accessToken,
+			},
+		});
+		//Email sender
+		const mailOptions = {
+			from: "Saorsa <adarsh7506774609@gmail.com>",
+			to: email,
+			subject: "Verification Email",
+			html: `Press <button><a href=http://localhost:4000/api/user/verify/${uniqueString}>here</a></button> to verify your account`,
+		};
 
-	transporter.sendMail(mailOptions, (error, info) => {
-		if (error) {
-			console.log(error);
-		} else {
-			console.log("Email Sent: " + info.response);
-		}
-	});
+		await transporter.sendMail(mailOptions, (error, info) => {
+			if (error) {
+				res.error(error);
+				console.log(error);
+			} else {
+				res.send(info.response);
+				console.log("Email Sent: " + info.response);
+			}
+		});
+	} catch (err) {
+		console.log(err);
+	}
 };
 
 //route    POST api/user
@@ -108,6 +127,7 @@ router.post(
 			//Appending the user ID at the back of email link to make it unique
 			const uniqueString = user.id;
 			sendEmail(email, uniqueString);
+			res.send("user added");
 		} catch (err) {
 			console.log(err.message);
 			res.status(500).send("Server Error");
@@ -147,7 +167,7 @@ router.post("/resend", async (req, res) => {
 	}
 });
 
-//route    POST api/user/fb
+//route    POST api/user/social
 //desc     Social Login
 //@access  Public
 router.post("/social", async (req, res) => {
