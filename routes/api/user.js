@@ -42,7 +42,7 @@ const sendEmail = async (email, uniqueString) => {
 			from: "Saorsa <adarsh7506774609@gmail.com>",
 			to: email,
 			subject: "Verification Email",
-			html: `Press <button><a href=http://localhost:4000/api/user/verify/${uniqueString}>here</a></button> to verify your account`,
+			html: `Press <button><a href=https://mighty-bastion-04883.herokuapp.com/api/user/verify/${uniqueString}>here</a></button> to verify your account`,
 		};
 
 		await transporter.sendMail(mailOptions, (error, info) => {
