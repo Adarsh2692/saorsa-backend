@@ -37,7 +37,7 @@ router.get("/me", auth, async (req, res) => {
 //@desc     Update user profile
 //@access   Private
 router.post("/", auth, multerUploads, async (req, res) => {
-	const { bio, coverImage } = req.body;
+	const { bio } = req.body;
 
 	//Build profile object
 	let profileFields = {};
@@ -48,7 +48,7 @@ router.post("/", auth, multerUploads, async (req, res) => {
 	if (req.file) {
 		const file = dataUri(req).content;
 		await uploader.upload(file).then((result) => {
-			profileFields.coverImage = result.url;
+			profileFields.coverImage = result.secure_url;
 		});
 	}
 
@@ -64,6 +64,7 @@ router.post("/", auth, multerUploads, async (req, res) => {
 			);
 			return res.json(profileFields);
 		}
+		return res.json(profileFields);
 	} catch (err) {
 		console.error(error.message);
 		res.status(500).send("Server Error");
