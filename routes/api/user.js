@@ -172,7 +172,7 @@ router.post("/resend", async (req, res) => {
 //@access  Public
 router.post("/social", async (req, res) => {
 	//get email and name from facebook or google
-	const { name, email } = req.body;
+	const { name, email, avatar } = req.body;
 	try {
 		let user = await User.findOne({ email });
 		let confirmed = true;
@@ -189,6 +189,7 @@ router.post("/social", async (req, res) => {
 			//Simultaneously creating profile and mood object and saving in database
 			const profileFields = {};
 			profileFields.user = user.id;
+			profileFields.coverImage = avatar;
 			const profile = new Profile(profileFields);
 			profile.save();
 
