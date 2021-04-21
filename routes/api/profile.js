@@ -37,7 +37,7 @@ router.get("/me", auth, async (req, res) => {
 //@desc     Update user profile
 //@access   Private
 router.post("/", auth, multerUploads, async (req, res) => {
-	const { bio } = req.body;
+	const { bio,name } = req.body;
 
 	//Build profile object
 	let profileFields = {};

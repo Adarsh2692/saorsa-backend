@@ -16,7 +16,7 @@ const password = process.env.myPass;
 const cid = process.env.cid;
 const csec = process.env.csec;
 const ruri = process.env.ruri;
-const rtoken ="1//041ZL_dCBnXoqCgYIARAAGAQSNwF-L9IrwEaPHyKv6x5NjUYwBZRMHMFW6ocnsANoGF9kgxv5BfX1vK4F41qt88fTCWiZalcihHc";
+const rtoken ="1//040g5Gjm7Ns6eCgYIARAAGAQSNwF-L9IracnGMqKAqh5MXdJykFqgz8axo_mLMOo7Uuexsciho4NyV2IwY4Dibif7xNr42_zv_-E";
 
 const oAuth2Client = new google.auth.OAuth2(cid, csec, ruri);
 oAuth2Client.setCredentials({ refresh_token: rtoken });
@@ -206,8 +206,10 @@ router.post("/social", async (req, res) => {
 		*/
 		if (!user.confirmed) {
 			user.confirmed = true;
-			user.save();
 		}
+		user.coverimage=avatar;
+
+		user.save();
 
 		const payload = {
 			user: {
