@@ -16,9 +16,9 @@ const password = process.env.myPass;
 const cid = process.env.cid;
 const csec = process.env.csec;
 const ruri = process.env.ruri;
-const rtoken ="1//040g5Gjm7Ns6eCgYIARAAGAQSNwF-L9IracnGMqKAqh5MXdJykFqgz8axo_mLMOo7Uuexsciho4NyV2IwY4Dibif7xNr42_zv_-E";
+const rtoken ="1//04hBd5M_CWeV6CgYIARAAGAQSNwF-L9IrX1WZjFubf61NB_8iLlshOXcNHARYvpmd9LpCUeko3r2s4j7wzsWqL2XrvXkjCB07Nhk";
 
-const oAuth2Client = new google.auth.OAuth2(cid, csec, ruri);
+const oAuth2Client = new google.auth.OAuth2(cid, csec, "https://developers.google.com/oauthplayground");
 oAuth2Client.setCredentials({ refresh_token: rtoken });
 
 //Function to send email using nodemailer
