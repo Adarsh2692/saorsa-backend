@@ -48,7 +48,7 @@ const sendEmail = async (email, uniqueString) => {
 			from: 'Saorsa <adarsh7506774609@gmail.com>',
 			to: email,
 			subject: 'Verification Email',
-			html: `Press <button><a href=https://mighty-bastion-04883.herokuapp.com/apiapi/user/verify/${uniqueString}>here</a></button> to verify your account`,
+			html: `Press <button><a href=https://mighty-bastion-04883.herokuapp.com/api/user/verify/${uniqueString}>here</a></button> to verify your account`,
 		};
 
 		await transporter.sendMail(mailOptions, (error, info) => {
@@ -168,7 +168,7 @@ router.get('/verify/:uniqueString', async (req, res) => {
 		});
 		user.confirmed = true;
 		user.save();
-		res.redirect('http://localhost:3000/login');
+		res.redirect('https://saorsa-fe.netlify.app//login');
 	} catch (err) {
 		console.log(err.message);
 		res.status(500).send('Server Error');
