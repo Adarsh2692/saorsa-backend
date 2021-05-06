@@ -220,6 +220,22 @@ router.post('/social', async (req, res) => {
 			moodFields.user = user.id;
 			const mood = new Mood(moodFields);
 			mood.save();
+
+			const steps = await Step.find();
+			const progressFields = {};
+			progressFields.progressArray = [];
+			progressFields.user = user.id;
+
+			steps.forEach((e) => {
+				const final = {};
+				final.total = e.courses.length;
+				final.sum = 0;
+				final.percentage = 0;
+				progressFields.progressArray.push(final);
+				progressFields.name = e.name;
+			});
+			const progress = new Progress(progressFields);
+			progress.save();
 		}
 
 		/*
@@ -247,7 +263,7 @@ router.post('/social', async (req, res) => {
 			},
 			(err, token) => {
 				if (err) throw err;
-				res.send({ token, progressFields });
+				res.send({ token });
 			}
 		);
 	} catch (err) {
