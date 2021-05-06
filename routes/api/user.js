@@ -1,25 +1,31 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const gravatar = require("gravatar");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const config = require("config");
-const { check, validationResult } = require("express-validator");
-const User = require("../../models/User");
-const Profile = require("../../models/Profile");
-const Mood = require("../../models/Mood");
-const nodemailer = require("nodemailer");
-const auth = require("../../middleware/auth");
-const { google } = require("googleapis");
+const gravatar = require('gravatar');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const config = require('config');
+const { check, validationResult } = require('express-validator');
+const User = require('../../models/User');
+const Profile = require('../../models/Profile');
+const Mood = require('../../models/Mood');
+const Step = require('../../models/Step');
+const Progress = require('../../models/Progress');
+const nodemailer = require('nodemailer');
+const auth = require('../../middleware/auth');
+const { google } = require('googleapis');
 
 const password = process.env.myPass;
 const cid = process.env.cid;
 const csec = process.env.csec;
 const ruri = process.env.ruri;
-const rtoken ="1//04hBd5M_CWeV6CgYIARAAGAQSNwF-L9IrX1WZjFubf61NB_8iLlshOXcNHARYvpmd9LpCUeko3r2s4j7wzsWqL2XrvXkjCB07Nhk";
+const accessToken = process.env.accessToken;
+const refreshToken = process.env.refreshToken;
 
-const oAuth2Client = new google.auth.OAuth2(cid, csec, "https://developers.google.com/oauthplayground");
-oAuth2Client.setCredentials({ refresh_token: rtoken });
+const oAuth2Client = new google.auth.OAuth2(cid, csec, ruri);
+oAuth2Client.setCredentials({
+	refresh_token: refreshToken,
+	access_token: accessToken,
+});
 
 //Function to send email using nodemailer
 const sendEmail = async (email, uniqueString) => {
@@ -27,22 +33,22 @@ const sendEmail = async (email, uniqueString) => {
 		//Account details of the sender
 		const accessToken = await oAuth2Client.getAccessToken();
 		const transporter = nodemailer.createTransport({
-			service: "gmail",
+			service: 'gmail',
 			auth: {
-				type: "OAuth2",
-				user: "adarsh7506774609@gmail.com",
+				type: 'OAuth2',
+				user: 'adarsh7506774609@gmail.com',
 				clientId: cid,
 				clientSecret: csec,
-				refreshToken: rtoken,
+				refreshToken: refreshToken,
 				accessToken: accessToken,
 			},
 		});
 		//Email sender
 		const mailOptions = {
-			from: "Saorsa <adarsh7506774609@gmail.com>",
+			from: 'Saorsa <adarsh7506774609@gmail.com>',
 			to: email,
-			subject: "Verification Email",
-			html: `Press <button><a href=https://mighty-bastion-04883.herokuapp.com/api/user/verify/${uniqueString}>here</a></button> to verify your account`,
+			subject: 'Verification Email',
+			html: `Press <button><a href=https://mighty-bastion-04883.herokuapp.com/apiapi/user/verify/${uniqueString}>here</a></button> to verify your account`,
 		};
 
 		await transporter.sendMail(mailOptions, (error, info) => {
@@ -51,7 +57,7 @@ const sendEmail = async (email, uniqueString) => {
 				console.log(error);
 			} else {
 				res.send(info.response);
-				console.log("Email Sent: " + info.response);
+				console.log('Email Sent: ' + info.response);
 			}
 		});
 	} catch (err) {
@@ -63,13 +69,13 @@ const sendEmail = async (email, uniqueString) => {
 //desc     Register user
 //@access  Public
 router.post(
-	"/",
+	'/',
 	[
-		check("name", "Name is Required").notEmpty(),
-		check("email", "Please enter a valid email").isEmail(),
+		check('name', 'Name is Required').notEmpty(),
+		check('email', 'Please enter a valid email').isEmail(),
 		check(
-			"password",
-			"Please enter a password with 6 or more characters"
+			'password',
+			'Please enter a password with 6 or more characters'
 		).isLength({
 			min: 6,
 		}),
@@ -93,7 +99,7 @@ router.post(
 				return res.status(400).json({
 					errors: [
 						{
-							msg: "User Already exists",
+							msg: 'User Already exists',
 						},
 					],
 				});
@@ -124,13 +130,30 @@ router.post(
 			const mood = new Mood(moodFields);
 			mood.save();
 
+			// const steps= new Step.find();
+			const steps = await Step.find();
+			const progressFields = {};
+			progressFields.progressArray = [];
+			progressFields.user = user.id;
+
+			steps.forEach((e) => {
+				const final = {};
+				final.total = e.courses.length;
+				final.sum = 0;
+				final.percentage = 0;
+				progressFields.progressArray.push(final);
+				progressFields.name = e.name;
+			});
+			const progress = new Progress(progressFields);
+			progress.save();
+
 			//Appending the user ID at the back of email link to make it unique
 			const uniqueString = user.id;
 			sendEmail(email, uniqueString);
-			res.send("user added");
+			res.send('user added');
 		} catch (err) {
 			console.log(err.message);
-			res.status(500).send("Server Error");
+			res.status(500).send('Server Error');
 		}
 	}
 );
@@ -138,30 +161,30 @@ router.post(
 //route    GET api/user/verify/:uniqueString
 //desc     Send verification link
 //@access  Public
-router.get("/verify/:uniqueString", async (req, res) => {
+router.get('/verify/:uniqueString', async (req, res) => {
 	try {
 		const user = await User.findOne({
 			_id: req.params.uniqueString,
 		});
 		user.confirmed = true;
 		user.save();
-		res.redirect("http://localhost:3000/login");
+		res.redirect('http://localhost:3000/login');
 	} catch (err) {
 		console.log(err.message);
-		res.status(500).send("Server Error");
+		res.status(500).send('Server Error');
 	}
 });
 
 //route    POST api/user/resend
 //desc     Resend verification link to given email
 //@access  Public
-router.post("/resend", async (req, res) => {
+router.post('/resend', async (req, res) => {
 	//taking email from user
 	const { email } = req.body;
 	try {
 		const user = await User.findOne({ email });
 		sendEmail(user.email, user.id);
-		res.send("Email Sent");
+		res.send('Email Sent');
 	} catch (err) {
 		res.send(err);
 	}
@@ -170,7 +193,7 @@ router.post("/resend", async (req, res) => {
 //route    POST api/user/social
 //desc     Social Login
 //@access  Public
-router.post("/social", async (req, res) => {
+router.post('/social', async (req, res) => {
 	//get email and name from facebook or google
 	const { name, email, avatar } = req.body;
 	try {
@@ -207,7 +230,7 @@ router.post("/social", async (req, res) => {
 		if (!user.confirmed) {
 			user.confirmed = true;
 		}
-		user.coverimage=avatar;
+		user.coverimage = avatar;
 
 		user.save();
 
@@ -218,18 +241,18 @@ router.post("/social", async (req, res) => {
 		};
 		jwt.sign(
 			payload,
-			config.get("jwtSecret"),
+			config.get('jwtSecret'),
 			{
 				expiresIn: 360000,
 			},
 			(err, token) => {
 				if (err) throw err;
-				res.send({ token });
+				res.send({ token, progressFields });
 			}
 		);
 	} catch (err) {
 		console.log(err.message);
-		res.status(500).send("Server Error");
+		res.status(500).send('Server Error');
 	}
 });
 

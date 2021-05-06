@@ -1,23 +1,23 @@
-const express = require("express");
-const connectDB = require("./config/db");
-const path = require("path");
-const cors = require("cors");
-const multerFunc = require("./middleware/multer");
+const express = require('express');
+const connectDB = require('./config/db');
+const path = require('path');
+const cors = require('cors');
+const multerFunc = require('./middleware/multer');
 const multerUploads = multerFunc.multerUploads;
 const dataUri = multerFunc.dataUri;
-const cloudinary = require("./config/cloudinaryConfig");
+const cloudinary = require('./config/cloudinaryConfig');
 const uploader = cloudinary.uploader;
 const cloudinaryConfig = cloudinary.cloudinaryConfig;
-const passport = require("passport");
+const passport = require('passport');
 
 const app = express();
 
 app.use(cors());
 
-const dotenv = require("dotenv");
+const dotenv = require('dotenv');
 dotenv.config();
 
-app.use("*", cloudinaryConfig);
+app.use('*', cloudinaryConfig);
 
 //Connect Database
 connectDB();
@@ -37,11 +37,11 @@ app.use(
 // 	res.sendFile(path.join(__dirname, "./client/public/index.html"));
 // });
 
-app.get("/", (req, res) => {
-	res.send("Server running");
+app.get('/', (req, res) => {
+	res.send('Server running');
 });
 
-app.post("/uploads", multerUploads, (req, res) => {
+app.post('/uploads', multerUploads, (req, res) => {
 	if (req.file) {
 		const file = dataUri(req).content;
 		return uploader
@@ -50,7 +50,7 @@ app.post("/uploads", multerUploads, (req, res) => {
 				const image = result.url;
 				console.log(image);
 				return res.status(200).json({
-					message: "Your image has been uploded successfully to cloudinary",
+					message: 'Your image has been uploded successfully to cloudinary',
 					data: {
 						image,
 					},
@@ -60,7 +60,7 @@ app.post("/uploads", multerUploads, (req, res) => {
 			})
 			.catch((err) =>
 				res.status(400).json({
-					message: "someting went wrong while processing your request",
+					message: 'someting went wrong while processing your request',
 					data: {
 						err,
 					},
@@ -70,12 +70,12 @@ app.post("/uploads", multerUploads, (req, res) => {
 });
 
 //Define routes
-app.use("/api/auth", require("./routes/api/auth"));
-app.use("/api/courses", require("./routes/api/courses"));
-app.use("/api/mood", require("./routes/api/mood"));
-app.use("/api/user", require("./routes/api/user"));
-app.use("/api/profile", require("./routes/api/profile"));
-app.use("/api/step", require("./routes/api/step"));
+app.use('/api/auth', require('./routes/api/auth'));
+app.use('/api/courses', require('./routes/api/courses'));
+app.use('/api/mood', require('./routes/api/mood'));
+app.use('/api/user', require('./routes/api/user'));
+app.use('/api/profile', require('./routes/api/profile'));
+app.use('/api/step', require('./routes/api/step'));
 
 // Serve static assets in production
 // if(process.env.NODE_ENV==='production'){
