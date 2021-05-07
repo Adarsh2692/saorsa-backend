@@ -1,9 +1,9 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const MoodSchema = new mongoose.Schema({
 	user: {
 		type: mongoose.Schema.Types.ObjectId,
-		ref: "user",
+		ref: 'user',
 	},
 	moodArray: [
 		{
@@ -11,6 +11,9 @@ const MoodSchema = new mongoose.Schema({
 				type: String,
 			},
 			rating: {
+				type: Number,
+			},
+			score: {
 				type: Number,
 			},
 			date: {
@@ -21,4 +24,4 @@ const MoodSchema = new mongoose.Schema({
 	],
 });
 
-module.exports = Mood = mongoose.model("mood", MoodSchema);
+module.exports = Mood = mongoose.model('mood', MoodSchema);

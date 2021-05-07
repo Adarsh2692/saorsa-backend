@@ -10,7 +10,7 @@ const Mood = require("../../models/Mood");
 //@desc    Test route
 //@access  Private
 router.post("/new", auth, async (req, res) => {
-	const { mood, rating, date } = req.body;
+	const { mood, rating, date, score } = req.body;
 
 	//build new Mood object
 
@@ -19,6 +19,7 @@ router.post("/new", auth, async (req, res) => {
 	if (mood) moodFields.moodArray.mood = mood;
 	if (rating) moodFields.moodArray.rating = rating;
 	if (date) moodFields.moodArray.date = date;
+	if (score) moodFields.moodArray.score = score;
 
 	try {
 		let currentMood = await Mood.findOne({ user: req.user.id });
