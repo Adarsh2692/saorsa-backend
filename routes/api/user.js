@@ -141,8 +141,13 @@ router.post(
 				final.total = e.courses.length;
 				final.sum = 0;
 				final.percentage = 0;
+				final.step = e.name;
+				e.forEach((k) => {
+					const courses={};
+					courses.course=k.name;
+					final.courses.push(courses);
+				});
 				progressFields.progressArray.push(final);
-				progressFields.name = e.name;
 			});
 			const progress = new Progress(progressFields);
 			progress.save();
@@ -231,11 +236,19 @@ router.post('/social', async (req, res) => {
 				final.total = e.courses.length;
 				final.sum = 0;
 				final.percentage = 0;
+				final.step = e.name;
+				final.courses=[];
+				e.courses.forEach((k) => {
+					const courses={};
+					courses.course=k.name;
+					console.log(k+" 111");
+					final.courses.push(courses);
+				});
 				progressFields.progressArray.push(final);
-				progressFields.name = e.name;
 			});
 			const progress = new Progress(progressFields);
 			progress.save();
+
 		}
 
 		/*

@@ -55,7 +55,7 @@ router.post('/', auth, multerUploads, async (req, res) => {
 
 	try {
 		let profile = await Profile.findOne({ user: req.user.id });
-
+		
 		if (profile) {
 			//Update profile
 			profile = await Profile.findOneAndUpdate(

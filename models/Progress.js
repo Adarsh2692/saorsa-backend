@@ -5,11 +5,22 @@ const ProgressSchema = new mongoose.Schema({
 		type: mongoose.Schema.Types.ObjectId,
 		ref: 'user',
 	},
-	name: {
-		type: String,
-	},
 	progressArray: [
 		{
+			step: {
+				type: String,
+			},
+			courses: [
+				{
+					course: {
+						type: String,
+					},
+					done: {
+						type: Number,
+						default: 0,
+					},
+				},
+			],
 			total: {
 				type: Number,
 			},
@@ -18,7 +29,7 @@ const ProgressSchema = new mongoose.Schema({
 				default: 0,
 			},
 			percentage: {
-				type: mongoose.Schema.Types.Decimal128,
+				type: Number,
 			},
 		},
 	],

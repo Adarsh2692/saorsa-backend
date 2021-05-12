@@ -71,6 +71,7 @@ app.post('/uploads', multerUploads, (req, res) => {
 
 //Define routes
 app.use('/api/auth', require('./routes/api/auth'));
+app.use('/api/progress', require('./routes/api/progress'));
 app.use('/api/courses', require('./routes/api/courses'));
 app.use('/api/mood', require('./routes/api/mood'));
 app.use('/api/user', require('./routes/api/user'));
