@@ -33,14 +33,24 @@ const sendEmail = async (email, uniqueString) => {
 		//Account details of the sender
 		const accessToken = await oAuth2Client.getAccessToken();
 		const transporter = nodemailer.createTransport({
-			service: 'gmail',
+			// service: 'gmail',
+			// auth: {
+			// 	type: 'OAuth2',
+			// 	user: 'adarsh7506774609@gmail.com',
+			// 	clientId: cid,
+			// 	clientSecret: csec,
+			// 	refreshToken: refreshToken,
+			// 	accessToken: accessToken,
+			// },
+			host: 'smtp.gmail.com',
+			port: 465,
+			secure: true,
 			auth: {
 				type: 'OAuth2',
 				user: 'adarsh7506774609@gmail.com',
 				clientId: cid,
 				clientSecret: csec,
 				refreshToken: refreshToken,
-				accessToken: accessToken,
 			},
 		});
 		//Email sender
@@ -53,10 +63,8 @@ const sendEmail = async (email, uniqueString) => {
 
 		await transporter.sendMail(mailOptions, (error, info) => {
 			if (error) {
-				res.error(error);
 				console.log(error);
 			} else {
-				res.send(info.response);
 				console.log('Email Sent: ' + info.response);
 			}
 		});
@@ -142,9 +150,10 @@ router.post(
 				final.sum = 0;
 				final.percentage = 0;
 				final.step = e.name;
-				e.forEach((k) => {
-					const courses={};
-					courses.course=k.name;
+				final.courses = [];
+				e.courses.forEach((k) => {
+					const courses = {};
+					courses.course = k.name;
 					final.courses.push(courses);
 				});
 				progressFields.progressArray.push(final);
@@ -237,18 +246,17 @@ router.post('/social', async (req, res) => {
 				final.sum = 0;
 				final.percentage = 0;
 				final.step = e.name;
-				final.courses=[];
+				final.courses = [];
 				e.courses.forEach((k) => {
-					const courses={};
-					courses.course=k.name;
-					console.log(k+" 111");
+					const courses = {};
+					courses.course = k.name;
+					console.log(k + ' 111');
 					final.courses.push(courses);
 				});
 				progressFields.progressArray.push(final);
 			});
 			const progress = new Progress(progressFields);
 			progress.save();
-
 		}
 
 		/*
