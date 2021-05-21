@@ -9,6 +9,8 @@ const User = require('../../models/User');
 const Profile = require('../../models/Profile');
 const Mood = require('../../models/Mood');
 const Step = require('../../models/Step');
+const Mcq = require('../../models/Mcq');
+const Course = require('../../models/Course');
 const Progress = require('../../models/Progress');
 const nodemailer = require('nodemailer');
 const auth = require('../../middleware/auth');
@@ -31,17 +33,8 @@ oAuth2Client.setCredentials({
 const sendEmail = async (email, uniqueString) => {
 	try {
 		//Account details of the sender
-		const accessToken = await oAuth2Client.getAccessToken();
+		//const accessToken = await oAuth2Client.getAccessToken();
 		const transporter = nodemailer.createTransport({
-			// service: 'gmail',
-			// auth: {
-			// 	type: 'OAuth2',
-			// 	user: 'adarsh7506774609@gmail.com',
-			// 	clientId: cid,
-			// 	clientSecret: csec,
-			// 	refreshToken: refreshToken,
-			// 	accessToken: accessToken,
-			// },
 			host: 'smtp.gmail.com',
 			port: 465,
 			secure: true,
@@ -51,6 +44,7 @@ const sendEmail = async (email, uniqueString) => {
 				clientId: cid,
 				clientSecret: csec,
 				refreshToken: refreshToken,
+				accessToken: accessToken,
 			},
 		});
 		//Email sender
@@ -161,6 +155,24 @@ router.post(
 			const progress = new Progress(progressFields);
 			progress.save();
 
+			const subs = await Course.find();
+			const mcqFields = {};
+			mcqFields.sums = [];
+			mcqFields.user = user.id;
+
+			subs.forEach((e) => {
+				e.courses.forEach((k) => {
+					const sum = {};
+					sum.mcq = k.mcq.name;
+					sum.sumArray = [];
+					if (sum.mcq) {
+						mcqFields.sums.push(sum);
+					}
+				});
+			});
+			const subsArray = new Mcq(mcqFields);
+			subsArray.save();
+
 			//Appending the user ID at the back of email link to make it unique
 			const uniqueString = user.id;
 			sendEmail(email, uniqueString);
@@ -257,6 +269,24 @@ router.post('/social', async (req, res) => {
 			});
 			const progress = new Progress(progressFields);
 			progress.save();
+
+			const subs = await Course.find();
+			const mcqFields = {};
+			mcqFields.sums = [];
+			mcqFields.user = user.id;
+
+			subs.forEach((e) => {
+				e.courses.forEach((k) => {
+					const sum = {};
+					sum.mcq = k.mcq.name;
+					sum.sumArray = [];
+					if (sum.mcq) {
+						mcqFields.sums.push(sum);
+					}
+				});
+			});
+			const subsArray = new Mcq(mcqFields);
+			subsArray.save();
 		}
 
 		/*

@@ -1,18 +1,72 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const CourseSchema = new mongoose.Schema({
-	courseName: {
+	name: {
 		type: String,
 	},
-	courseImage: {
+	title: {
 		type: String,
 	},
-	musicLink: {
+	headingText: {
 		type: String,
 	},
-	exerciseLink: {
+	image: {
 		type: String,
 	},
+	courses: [
+		{
+			img: {
+				type: String,
+			},
+			name: {
+				type: String,
+			},
+			data: [
+				{
+					title: {
+						type: String,
+					},
+					description: {
+						type: String,
+					},
+					img: {
+						type: String,
+					},
+					audio: {
+						type: String,
+					},
+					video: {
+						type: String,
+					},
+					thumbnail: {
+						type: String,
+					},
+				},
+			],
+			mcq: {
+				name: {
+					type: String,
+				},
+				mcqs: [
+					{
+						question: {
+							type: String,
+						},
+						options: [
+							{
+								option: {
+									type: String,
+								},
+								value: {
+									type: Number,
+								},
+							},
+						],
+					},
+				],
+			},
+		},
+	],
 });
 
-module.exports = Course = mongoose.model("course", CourseSchema);
+module.exports = Course = mongoose.model('course', CourseSchema);

@@ -77,6 +77,7 @@ app.use('/api/mood', require('./routes/api/mood'));
 app.use('/api/user', require('./routes/api/user'));
 app.use('/api/profile', require('./routes/api/profile'));
 app.use('/api/step', require('./routes/api/step'));
+app.use('/api/blog', require('./routes/api/blog'));
 
 // Serve static assets in production
 // if(process.env.NODE_ENV==='production'){
