@@ -25,10 +25,10 @@ router.get('/all', async (req, res) => {
 	}
 });
 
-router.get('/one', async (req, res) => {
-	const { name } = req.body;
+router.get('/one/:name', async (req, res) => {
+	const name = req.params.name;
 	try {
-		const course = await Course.find({name});
+		const course = await Course.find({ name });
 		res.json(course);
 	} catch (err) {
 		console.error(err.message);
