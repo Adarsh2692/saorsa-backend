@@ -24,7 +24,9 @@ router.put('/', auth, async (req, res) => {
 	try {
 		let mcqArray = await Mcq.findOne({ user: req.user.id });
 		mcqArray.sums.forEach((e) => {
-			e.sumArray.push(score);
+			if (e.mcq == mcq) {
+				e.sumArray.push(score);
+			}
 		});
 		mcqArray.save();
 		res.json(mcqArray);

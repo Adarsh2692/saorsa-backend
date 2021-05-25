@@ -16,11 +16,12 @@ router.post('/', async (req, res) => {
 	const { title, content } = req.body;
 	const blogFields = {};
 	blogFields.title = title;
-	blogFields.content = JSON.stringify(content);
+	blogFields.content = content;
+	// console.log(content);
 	try {
-		test = await Blog.findOne({ title });
+		const test = await Blog.findOne({ title });
 		if (!test) {
-            blog =await new Blog(blogFields);
+            blog =new Blog(blogFields);
 			await blog.save();
 			res.send(blog);
 		} else res.send('Please alter the title');
