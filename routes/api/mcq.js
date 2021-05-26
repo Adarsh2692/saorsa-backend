@@ -6,10 +6,16 @@ const Mcq = require('../../models/Mcq');
 //@route   GET api/mcq
 //@desc    Get mcq score array
 //@access  Private
-router.get('/', auth, async (req, res) => {
+router.get('/:name', auth, async (req, res) => {
+	const name=req.params.name;
 	try {
 		let mcqArray = await Mcq.findOne({ user: req.user.id });
-		res.json(mcqArray);
+		//mcqArray.sums.find({mcq:name})
+		let mcq=[];
+		mcqArray.sums.forEach((val)=>{
+			if(val.mcq==name) mcq=val.sumArray;
+		})
+		res.json(mcq);
 	} catch (err) {
 		console.error(err.message);
 		res.status(500).send('Server Error');

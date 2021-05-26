@@ -17,13 +17,12 @@ router.post('/', async (req, res) => {
 	const blogFields = {};
 	blogFields.title = title;
 	blogFields.content = content;
-	// console.log(content);
 	try {
 		const test = await Blog.findOne({ title });
 		if (!test) {
-            blog =new Blog(blogFields);
+            const blog =new Blog(blogFields);
 			await blog.save();
-			res.send(blog);
+			res.send("ok");
 		} else res.send('Please alter the title');
 	} catch (err) {
 		res.json({ msg: err });
