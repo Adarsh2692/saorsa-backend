@@ -11,11 +11,11 @@ router.get('/:name', auth, async (req, res) => {
 	try {
 		let mcqArray = await Mcq.findOne({ user: req.user.id });
 		//mcqArray.sums.find({mcq:name})
-		let mcq=[];
+		let mcq={};
 		mcqArray.sums.forEach((val)=>{
-			if(val.mcq==name) mcq=val.sumArray;
+			if(val.mcq==name) mcq=val;
 		})
-		res.json(mcq);
+		res.send(mcq);
 	} catch (err) {
 		console.error(err.message);
 		res.status(500).send('Server Error');
