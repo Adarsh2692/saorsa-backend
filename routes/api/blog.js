@@ -12,6 +12,15 @@ router.get('/', async (req, res) => {
 	}
 });
 
+router.get('/all', async (req, res) => {
+	try {
+		blog = await Blog.find();
+		res.send(blog);
+	} catch (err) {
+		res.json({ msg: err });
+	}
+});
+
 router.post('/', async (req, res) => {
 	const { title, content } = req.body;
 	const blogFields = {};
@@ -20,9 +29,9 @@ router.post('/', async (req, res) => {
 	try {
 		const test = await Blog.findOne({ title });
 		if (!test) {
-            const blog =new Blog(blogFields);
+			const blog = new Blog(blogFields);
 			await blog.save();
-			res.send("ok");
+			res.send('ok');
 		} else res.send('Please alter the title');
 	} catch (err) {
 		res.json({ msg: err });
