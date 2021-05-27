@@ -10,7 +10,6 @@ router.get('/:name', auth, async (req, res) => {
 	const name=req.params.name;
 	try {
 		let mcqArray = await Mcq.findOne({ user: req.user.id });
-		//mcqArray.sums.find({mcq:name})
 		let mcq={};
 		mcqArray.sums.forEach((val)=>{
 			if(val.mcq==name) mcq=val;
@@ -25,7 +24,7 @@ router.get('/:name', auth, async (req, res) => {
 //@route   PUT api/mcq
 //@desc    Push score to mcq array
 //@access  Private
-router.put('/', auth, async (req, res) => {
+router.post('/', auth, async (req, res) => {
 	const { mcq, score } = req.body;
 	try {
 		let mcqArray = await Mcq.findOne({ user: req.user.id });
