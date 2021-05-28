@@ -12,6 +12,7 @@ const Step = require('../../models/Step');
 const Mcq = require('../../models/Mcq');
 const Course = require('../../models/Course');
 const Progress = require('../../models/Progress');
+const FormSubmit = require('../../models/FormSubmit');
 const nodemailer = require('nodemailer');
 const auth = require('../../middleware/auth');
 const { google } = require('googleapis');
@@ -35,9 +36,9 @@ const sendEmail = async (email, uniqueString) => {
 		//Account details of the sender
 		//const accessToken = await oAuth2Client.getAccessToken();
 		const transporter = nodemailer.createTransport({
-			service:"gmail",
+			service: 'gmail',
 			secure: true,
-			pool:"true",
+			pool: 'true',
 			auth: {
 				type: 'OAuth2',
 				user: 'adarsh7506774609@gmail.com',
@@ -172,6 +173,11 @@ router.post(
 			const subsArray = new Mcq(mcqFields);
 			subsArray.save();
 
+			const formFields = {};
+			formFields.user = user.id;
+			const finalform = new FormSubmit(formFields);
+			finalform.save();
+
 			//Appending the user ID at the back of email link to make it unique
 			const uniqueString = user.id;
 			sendEmail(email, uniqueString);
@@ -245,6 +251,11 @@ router.post('/social', async (req, res) => {
 			moodFields.user = user.id;
 			const mood = new Mood(moodFields);
 			mood.save();
+
+			const formFields = {};
+			formFields.user = user.id;
+			const finalform = new FormSubmit(formFields);
+			finalform.save();
 
 			const steps = await Step.find();
 			const progressFields = {};

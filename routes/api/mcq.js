@@ -7,13 +7,13 @@ const Mcq = require('../../models/Mcq');
 //@desc    Get mcq score array
 //@access  Private
 router.get('/:name', auth, async (req, res) => {
-	const name=req.params.name;
+	const name = req.params.name;
 	try {
 		let mcqArray = await Mcq.findOne({ user: req.user.id });
-		let mcq={};
-		mcqArray.sums.forEach((val)=>{
-			if(val.mcq==name) mcq=val;
-		})
+		let mcq = {};
+		mcqArray.sums.forEach((val) => {
+			if (val.mcq == name) mcq = val;
+		});
 		res.send(mcq);
 	} catch (err) {
 		console.error(err.message);
@@ -35,7 +35,9 @@ router.post('/', auth, async (req, res) => {
 		});
 		mcqArray.save();
 		res.json(mcqArray);
-	} catch (err) {}
+	} catch (err) {
+		res.status(500).json(err);
+	}
 });
 
 module.exports = router;

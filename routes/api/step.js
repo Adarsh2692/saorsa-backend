@@ -1,24 +1,23 @@
-const express = require("express");
-const request = require("request");
-const config = require("config");
+const express = require('express');
+const request = require('request');
+const config = require('config');
 const router = express.Router();
-const auth = require("../../middleware/auth");
-const { check, validationResult } = require("express-validator");
-const User = require("../../models/User");
-const Profile = require("../../models/Profile");
-const Step = require("../../models/Step");
-const multerFunc = require("../../middleware/multer");
+const auth = require('../../middleware/auth');
+const { check, validationResult } = require('express-validator');
+const User = require('../../models/User');
+const Profile = require('../../models/Profile');
+const Step = require('../../models/Step');
+const multerFunc = require('../../middleware/multer');
 const multerUploads = multerFunc.multerUploads;
 const dataUri = multerFunc.dataUri;
-const cloudinary = require("../../config/cloudinaryConfig");
+const cloudinary = require('../../config/cloudinaryConfig');
 const uploader = cloudinary.uploader;
 const cloudinaryConfig = cloudinary.cloudinaryConfig;
 
 //@route    POST api/step/create
 //@desc     Create a step
 //@access   Admin access *for now we arent using admin auth to keep things simple
-router.post("/create", multerUploads, async (req, res) => {
-	
+router.post('/create', multerUploads, async (req, res) => {
 	const { name, title, headingText } = req.body;
 
 	//Build step object
@@ -40,22 +39,21 @@ router.post("/create", multerUploads, async (req, res) => {
 
 		//Every step should have unique name, eg:Step1, Step2
 		if (step) {
-			return res.status(400).send("Step already exists");
+			return res.status(400).send('Step already exists');
 		}
 		const newStep = new Step(stepFields);
 		newStep.save();
 		res.send(newStep);
 	} catch (err) {
 		console.error(error.message);
-		res.status(500).send("Server Error");
+		res.status(500).send('Server Error');
 	}
 });
 
 //@route    POST api/step/:step/courses
 //@desc     Add a course in given step
 //@access   Admin access *for now we arent using admin auth to keep things simple
-router.post("/:step/courses", multerUploads, async (req, res) => {
-	
+router.post('/:step/courses', multerUploads, async (req, res) => {
 	const { name } = req.body;
 
 	//Build course object
@@ -87,17 +85,16 @@ router.post("/:step/courses", multerUploads, async (req, res) => {
 		res.send(stepFields);
 	} catch (err) {
 		console.error(error.message);
-		res.status(500).send("Server Error");
+		res.status(500).send('Server Error');
 	}
 });
 
 //@route    POST api/step/:step/:course/data
 //@desc     Add data to the given course of given step
 //@access   Private
-router.post("/:step/:course/data", multerUploads, async (req, res) => {
-	
+router.post('/:step/:course/data', multerUploads, async (req, res) => {
 	const { title, description, audio } = req.body;
-	
+
 	const stepFields = {};
 	if (title) stepFields.title = title;
 
@@ -118,7 +115,7 @@ router.post("/:step/:course/data", multerUploads, async (req, res) => {
 		});
 
 		//If given step doesn't exist
-		if(!step){
+		if (!step) {
 			return res.status(400).send("Step doesn't exist");
 		}
 
@@ -133,14 +130,14 @@ router.post("/:step/:course/data", multerUploads, async (req, res) => {
 		res.send(stepFields);
 	} catch (err) {
 		console.error(error.message);
-		res.status(500).send("Server Error");
+		res.status(500).send('Server Error');
 	}
 });
 
 //@route    GET api/step
 //@desc     Get all steps
 //@access   Public
-router.get("/", async (req, res) => {
+router.get('/', async (req, res) => {
 	try {
 		const step = await Step.find();
 		res.json(step);
