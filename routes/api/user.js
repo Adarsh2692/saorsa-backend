@@ -17,7 +17,6 @@ const nodemailer = require('nodemailer');
 const auth = require('../../middleware/auth');
 const { google } = require('googleapis');
 
-const password = process.env.myPass;
 const cid = process.env.cid;
 const csec = process.env.csec;
 const ruri = process.env.ruri;
@@ -29,43 +28,6 @@ oAuth2Client.setCredentials({
 	refresh_token: refreshToken,
 	access_token: accessToken,
 });
-
-//Function to send email using nodemailer
-const sendEmail = async (email, uniqueString) => {
-	try {
-		//Account details of the sender
-		//const accessToken = await oAuth2Client.getAccessToken();
-		const transporter = nodemailer.createTransport({
-			service: 'gmail',
-			secure: true,
-			pool: 'true',
-			auth: {
-				type: 'OAuth2',
-				user: 'adarsh7506774609@gmail.com',
-				clientId: cid,
-				clientSecret: csec,
-				refreshToken: refreshToken,
-			},
-		});
-		//Email sender
-		const mailOptions = {
-			from: 'Saorsa <adarsh7506774609@gmail.com>',
-			to: email,
-			subject: 'Verification Email',
-			html: `Press <button><a href=https://mighty-bastion-04883.herokuapp.com/api/user/verify/${uniqueString}>here</a></button> to verify your account`,
-		};
-
-		await transporter.sendMail(mailOptions, (error, info) => {
-			if (error) {
-				console.log(error);
-			} else {
-				console.log('Email Sent: ' + info.response);
-			}
-		});
-	} catch (err) {
-		console.log(err);
-	}
-};
 
 //route    POST api/user
 //desc     Register user
@@ -180,7 +142,7 @@ router.post(
 
 			//Appending the user ID at the back of email link to make it unique
 			const uniqueString = user.id;
-			sendEmail(email, uniqueString);
+			sendEmail(email, uniqueString, 0);
 			res.send('user added');
 		} catch (err) {
 			console.log(err.message);
@@ -188,38 +150,6 @@ router.post(
 		}
 	}
 );
-
-//route    GET api/user/verify/:uniqueString
-//desc     Send verification link
-//@access  Public
-router.get('/verify/:uniqueString', async (req, res) => {
-	try {
-		const user = await User.findOne({
-			_id: req.params.uniqueString,
-		});
-		user.confirmed = true;
-		user.save();
-		res.redirect('https://saorsa-fe.netlify.app//login');
-	} catch (err) {
-		console.log(err.message);
-		res.status(500).send('Server Error');
-	}
-});
-
-//route    POST api/user/resend
-//desc     Resend verification link to given email
-//@access  Public
-router.post('/resend', async (req, res) => {
-	//taking email from user
-	const { email } = req.body;
-	try {
-		const user = await User.findOne({ email });
-		sendEmail(user.email, user.id);
-		res.send('Email Sent');
-	} catch (err) {
-		res.send(err);
-	}
-});
 
 //route    POST api/user/social
 //desc     Social Login
@@ -330,6 +260,152 @@ router.post('/social', async (req, res) => {
 	} catch (err) {
 		console.log(err.message);
 		res.status(500).send('Server Error');
+	}
+});
+
+router.delete('/delete', async (req, res) => {
+	const { email } = req.body;
+	try {
+		let user = await User.findOne({ email });
+		if (user) {
+			let id = user.id;
+			await User.deleteOne({ _id: user.id });
+			await Profile.deleteOne({ user: user.id });
+			await Mood.deleteOne({ user: user.id });
+			await Mcq.deleteOne({ user: user.id });
+			await FormSubmit.deleteOne({ user: user.id });
+			await Progress.deleteOne({ user: user.id });
+			res.send(`${email} deleted`);
+		} else res.send('no such user');
+	} catch (err) {
+		res.status(500).send(err);
+	}
+});
+
+//Function to send email using nodemailer
+const sendEmail = async (email, uniqueString, reset) => {
+	try {
+		//Account details of the sender
+		//const accessToken = await oAuth2Client.getAccessToken();
+		const transporter = nodemailer.createTransport({
+			service: 'gmail',
+			secure: true,
+			pool: 'true',
+			auth: {
+				type: 'OAuth2',
+				user: 'adarsh7506774609@gmail.com',
+				clientId: cid,
+				clientSecret: csec,
+				refreshToken: refreshToken,
+			},
+		});
+		//Email sender
+		const mailOptions1 = {
+			from: 'Saorsa <adarsh7506774609@gmail.com>',
+			to: email,
+			subject: 'Verification Email',
+			html: `Press <button><a href=https://mighty-bastion-04883.herokuapp.com/api/user/verify/${uniqueString}>here</a></button> to verify your account`,
+		};
+
+		const mailOptions2 = {
+			from: 'Saorsa <adarsh7506774609@gmail.com>',
+			to: email,
+			subject: 'Reset Password',
+			html: `Press <button><a href=http://localhost:4000/api/user/forgot/${uniqueString}>here</a></button> to verify your account and reset the passwprd`,
+		};
+
+		await transporter.sendMail(
+			!reset ? mailOptions1 : mailOptions2,
+			(error, info) => {
+				if (error) {
+					console.log(error);
+				} else {
+					console.log('Email Sent: ' + info.response);
+				}
+			}
+		);
+	} catch (err) {
+		console.log(err);
+	}
+};
+
+//route    GET api/user/forgot/:uniqueString
+//desc     Send verification link
+//@access  Public
+router.get('/forgot/:uniqueString', async (req, res) => {
+	try {
+		const token = req.params.uniqueString;
+		const user = await User.findOne({ email: token.email });
+		let base64Url = token.split('.')[1]; // token you get
+		let base64 = base64Url.replace('-', '+').replace('_', '/');
+		let decodedData = JSON.parse(
+			Buffer.from(base64, 'base64').toString('binary')
+		);
+
+		const salt = await bcrypt.genSalt(10);
+		const password = await bcrypt.hash(decodedData.password, salt);
+
+		await User.updateOne(
+			{ email: decodedData.email },
+			{ password },
+			{ upsert: true }
+		);
+		res.redirect('https://saorsawellbeing.herokuapp.com/login');
+	} catch (err) {
+		console.log(err.message);
+		res.status(500).send('Server Error');
+	}
+});
+
+//route    GET api/user/verify/:uniqueString
+//desc     Send verification link
+//@access  Public
+router.get('/verify/:uniqueString', async (req, res) => {
+	try {
+		const user = await User.findOne({
+			_id: req.params.uniqueString,
+		});
+		user.confirmed = true;
+		user.save();
+		res.redirect('https://saorsawellbeing.herokuapp.com/login');
+	} catch (err) {
+		console.log(err.message);
+		res.status(500).send('Server Error');
+	}
+});
+
+//route    POST api/user/resend
+//desc     Resend verification link to given email
+//@access  Public
+router.post('/resend', async (req, res) => {
+	//taking email from user
+	const { email } = req.body;
+	try {
+		const user = await User.findOne({ email });
+		sendEmail(user.email, user.id, 0);
+		res.send('Email Sent');
+	} catch (err) {
+		res.send(err);
+	}
+});
+
+//route    POST api/user/forgot
+//desc     Forgot password
+//@access  Public
+router.post('/forgot', async (req, res) => {
+	//taking email from user
+	const { email, password } = req.body;
+	try {
+		const user = await User.findOne({ email });
+		const token = jwt.sign(
+			{ email, password },
+			process.env.RESET_PASSWORD_KEY,
+			{ expiresIn: '20m' }
+		);
+		sendEmail(user.email, token, 1);
+		res.send('Email Sent with ' + token);
+	} catch (err) {
+		res.send(err);
 	}
 });
 

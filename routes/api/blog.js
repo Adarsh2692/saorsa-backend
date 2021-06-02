@@ -32,9 +32,22 @@ router.post('/', async (req, res) => {
 			const blog = new Blog(blogFields);
 			await blog.save();
 			res.send('ok');
-		} else res.send('Please alter the title');
+		} else res.send('Please alter the title as the same title already exists');
 	} catch (err) {
 		res.json({ msg: err });
+	}
+});
+
+router.delete('/delete', async (req, res) => {
+	const { title } = req.body;
+	try {
+		const blog = await Blog.find({ title });
+		if (blog) {
+			await Blog.deleteOne({ title });
+			res.send(`${title} deleted from blog list`);
+		} else res.send("This blog doesn't exist");
+	} catch (err) {
+		res.status(500).send(err);
 	}
 });
 
