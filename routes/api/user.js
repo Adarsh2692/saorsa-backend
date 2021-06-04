@@ -311,7 +311,7 @@ const sendEmail = async (email, uniqueString, reset) => {
 			from: 'Saorsa <adarsh7506774609@gmail.com>',
 			to: email,
 			subject: 'Reset Password',
-			html: `Press <button><a href=http://localhost:4000/api/user/forgot/${uniqueString}>here</a></button> to verify your account and reset the passwprd`,
+			html: `Press <button><a href=https://mighty-bastion-04883.herokuapp.com/api/user/forgot/${uniqueString}>here</a></button> to verify your account and reset the passwprd`,
 		};
 
 		await transporter.sendMail(
@@ -403,7 +403,7 @@ router.post('/forgot', async (req, res) => {
 			{ expiresIn: '20m' }
 		);
 		sendEmail(user.email, token, 1);
-		res.send('Email Sent with ' + token);
+		res.send('Email Sent');
 	} catch (err) {
 		res.send(err.message);
 	}
