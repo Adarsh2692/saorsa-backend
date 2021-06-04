@@ -80,6 +80,7 @@ app.use('/api/step', require('./routes/api/step'));
 app.use('/api/blog', require('./routes/api/blog'));
 app.use('/api/mcq', require('./routes/api/mcq'));
 app.use('/api/formsubmit', require('./routes/api/formsubmit'));
+app.use('/api/home', require('./routes/api/homepage'));
 
 // Serve static assets in production
 // if(process.env.NODE_ENV==='production'){

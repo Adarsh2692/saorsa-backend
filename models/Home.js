@@ -1,6 +1,9 @@
 const mongoose = require('mongoose');
 
-const BlogSchema = new mongoose.Schema({
+const HomeSchema = new mongoose.Schema({
+	name: {
+		type: String,
+	},
 	title: {
 		type: String,
 	},
@@ -10,9 +13,6 @@ const BlogSchema = new mongoose.Schema({
 	image: {
 		type: String,
 	},
-	content: {
-		type: String,
-	},
 });
 
-module.exports = Blog = mongoose.model('blog', BlogSchema);
+module.exports = Home = mongoose.model('home', HomeSchema);

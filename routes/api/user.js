@@ -405,6 +405,18 @@ router.post('/forgot', async (req, res) => {
 		sendEmail(user.email, token, 1);
 		res.send('Email Sent with ' + token);
 	} catch (err) {
+		res.send(err.message);
+	}
+});
+
+//route    GET api/user/all
+//desc     Get all Users
+//@access  Public
+router.get('/all', async (req, res) => {
+	try {
+		const users = await User.find().select("-password");
+		res.send(users);
+	} catch (err) {
 		res.send(err);
 	}
 });
