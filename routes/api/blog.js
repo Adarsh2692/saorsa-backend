@@ -8,10 +8,9 @@ const cloudinary = require('../../config/cloudinaryConfig');
 const uploader = cloudinary.uploader;
 const cloudinaryConfig = cloudinary.cloudinaryConfig;
 
-router.get('/', async (req, res) => {
-	const { title } = req.body;
+router.get('/:title', async (req, res) => {
 	try {
-		blog = await Blog.findOne({ title });
+		blog = await Blog.findOne({ title: req.params.title });
 		res.send(blog);
 	} catch (err) {
 		res.json({ msg: err });
