@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const StepSchema = new mongoose.Schema({
 	name: {
@@ -23,6 +23,10 @@ const StepSchema = new mongoose.Schema({
 			},
 			data: [
 				{
+					category: {
+						type: String,
+						default: 'normal',
+					},
 					title: {
 						type: String,
 					},
@@ -35,10 +39,16 @@ const StepSchema = new mongoose.Schema({
 					audio: {
 						type: String,
 					},
+					video: {
+						type: String,
+					},
+					thumbnail: {
+						type: String,
+					},
 				},
 			],
 		},
 	],
 });
 
-module.exports = Step = mongoose.model("step", StepSchema);
+module.exports = Step = mongoose.model('step', StepSchema);
