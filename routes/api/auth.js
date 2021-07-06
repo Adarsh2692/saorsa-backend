@@ -87,7 +87,7 @@ router.post(
 					if (err) throw err;
 					res.send({
 						token,
-						user:secureUser,
+						user: secureUser,
 					});
 				}
 			);

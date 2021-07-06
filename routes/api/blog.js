@@ -52,6 +52,35 @@ router.post('/', multerUploads, async (req, res) => {
 	}
 });
 
+router.post('/edit', multerUploads, async (req, res) => {
+	const { title, content, description } = req.body;
+
+	const blogFields = {};
+	if (title) blogFields.title = title;
+	if (content) blogFields.content = content;
+	if (description) blogFields.description = description;
+	if (req.file) {
+		const file = dataUri(req).content;
+		await uploader.upload(file).then((result) => {
+			blogFields.image = result.secure_url;
+		});
+	}
+
+	try {
+		const test = await Blog.findOne({ title });
+		if (!test) {
+			const blog = await Blog.findOneAndUpdate(
+				{ title },
+				{ $set: blogFields },
+				{ new: true }
+			);
+			res.send('Blog uploaded');
+		} else res.send("There isn't any blog with given title");
+	} catch (err) {
+		res.json({ msg: err });
+	}
+});
+
 router.delete('/delete', async (req, res) => {
 	const { title } = req.body;
 	try {
