@@ -175,17 +175,18 @@ router.post('/social', async (req, res) => {
 			profileFields.user = user.id;
 			profileFields.coverImage = avatar;
 			const profile = new Profile(profileFields);
-			profile.save();
+			await profile.save();
 
 			const moodFields = {};
 			moodFields.user = user.id;
 			const mood = new Mood(moodFields);
-			mood.save();
+			await mood.save();
 
 			const formFields = {};
 			formFields.user = user.id;
+			formFields.responses = [];
 			const finalform = new FormSubmit(formFields);
-			finalform.save();
+			await finalform.save();
 
 			const steps = await Step.find();
 			const progressFields = {};
@@ -202,13 +203,12 @@ router.post('/social', async (req, res) => {
 				e.courses.forEach((k) => {
 					const courses = {};
 					courses.course = k.name;
-					console.log(k + ' 111');
 					final.courses.push(courses);
 				});
 				progressFields.progressArray.push(final);
 			});
 			const progress = new Progress(progressFields);
-			progress.save();
+			await progress.save();
 
 			const subs = await Course.find();
 			const mcqFields = {};
@@ -226,7 +226,7 @@ router.post('/social', async (req, res) => {
 				});
 			});
 			const subsArray = new Mcq(mcqFields);
-			subsArray.save();
+			await subsArray.save();
 		}
 
 		/*
@@ -352,7 +352,6 @@ router.get('/forgot/:uniqueString', async (req, res) => {
 		);
 		res.redirect('https://saorsawellbeing.herokuapp.com/login');
 	} catch (err) {
-		console.log(err.message);
 		res.status(500).send('Server Error');
 	}
 });
@@ -369,7 +368,6 @@ router.get('/verify/:uniqueString', async (req, res) => {
 		user.save();
 		res.redirect('https://saorsawellbeing.herokuapp.com/login');
 	} catch (err) {
-		console.log(err.message);
 		res.status(500).send('Server Error');
 	}
 });
@@ -414,7 +412,7 @@ router.post('/forgot', async (req, res) => {
 //@access  Public
 router.get('/all', async (req, res) => {
 	try {
-		const users = await User.find().select("-password");
+		const users = await User.find().select('-password');
 		res.send(users);
 	} catch (err) {
 		res.send(err);
