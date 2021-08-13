@@ -68,7 +68,7 @@ router.post('/edit', multerUploads, async (req, res) => {
 
 	try {
 		const test = await Blog.findOne({ title });
-		if (!test) {
+		if (test) {
 			const blog = await Blog.findOneAndUpdate(
 				{ title },
 				{ $set: blogFields },
