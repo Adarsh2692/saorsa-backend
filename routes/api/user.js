@@ -1,21 +1,21 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const gravatar = require("gravatar");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const config = require("config");
-const { check, validationResult } = require("express-validator");
-const User = require("../../models/User");
-const Profile = require("../../models/Profile");
-const Mood = require("../../models/Mood");
-const Step = require("../../models/Step");
-const Mcq = require("../../models/Mcq");
-const Course = require("../../models/Course");
-const Progress = require("../../models/Progress");
-const FormSubmit = require("../../models/FormSubmit");
-const nodemailer = require("nodemailer");
-const auth = require("../../middleware/auth");
-const { google } = require("googleapis");
+const gravatar = require('gravatar');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const config = require('config');
+const { check, validationResult } = require('express-validator');
+const User = require('../../models/User');
+const Profile = require('../../models/Profile');
+const Mood = require('../../models/Mood');
+const Step = require('../../models/Step');
+const Mcq = require('../../models/Mcq');
+const Course = require('../../models/Course');
+const Progress = require('../../models/Progress');
+const FormSubmit = require('../../models/FormSubmit');
+const nodemailer = require('nodemailer');
+const auth = require('../../middleware/auth');
+const { google } = require('googleapis');
 
 const cid = process.env.cid;
 const csec = process.env.csec;
@@ -26,29 +26,26 @@ const refreshToken = process.env.refreshToken;
 const oAuth2Client = new google.auth.OAuth2(cid, csec, ruri);
 oAuth2Client.setCredentials({
 	refresh_token: refreshToken,
-	access_token: accessToken,
+	access_token: accessToken
 });
 
 //route    POST api/user
 //desc     Register user
 //@access  Public
 router.post(
-	"/",
+	'/',
 	[
-		check("name", "Name is Required").notEmpty(),
-		check("email", "Please enter a valid email").isEmail(),
-		check(
-			"password",
-			"Please enter a password with 6 or more characters"
-		).isLength({
-			min: 6,
-		}),
+		check('name', 'Name is Required').notEmpty(),
+		check('email', 'Please enter a valid email').isEmail(),
+		check('password', 'Please enter a password with 6 or more characters').isLength({
+			min: 6
+		})
 	],
 	async (req, res) => {
 		const errors = validationResult(req);
 		if (!errors.isEmpty()) {
 			return res.status(400).json({
-				errors: errors.array(),
+				errors: errors.array()
 			});
 		}
 
@@ -56,16 +53,16 @@ router.post(
 
 		try {
 			let user = await User.findOne({
-				email,
+				email
 			});
 
 			if (user) {
 				return res.status(400).json({
 					errors: [
 						{
-							msg: "User Already exists",
-						},
-					],
+							msg: 'User Already exists'
+						}
+					]
 				});
 			}
 
@@ -73,7 +70,7 @@ router.post(
 			user = new User({
 				name,
 				email,
-				password,
+				password
 			});
 
 			const salt = await bcrypt.genSalt(10);
@@ -96,27 +93,30 @@ router.post(
 			mood.save();
 
 			// const steps= new Step.find();
-			const steps = await Step.find();
+			let steps = await Step.find();
 			const progressFields = {};
 			progressFields.progressArray = [];
 			progressFields.user = user.id;
 
-			steps.forEach((e) => {
+			steps.forEach((k) => {
+				let e = k.toObject();
 				const final = {};
-				final.total = e.courses.length;
-				final.sum = 0;
+				final.data = [];
+				final.data = e.data;
+				final.total = e.data.length;
 				final.percentage = 0;
 				final.step = e.name;
-				final.courses = [];
-				e.courses.forEach((k) => {
-					const courses = {};
-					courses.course = k.name;
-					final.courses.push(courses);
+				final.videos = [];
+				e.data.forEach((k) => {
+					val = {};
+					val.watchPercentage = 0;
+					final.videos.push(val);
 				});
 				progressFields.progressArray.push(final);
 			});
+
 			const progress = new Progress(progressFields);
-			progress.save();
+			await progress.save();
 
 			const subs = await Course.find();
 			const mcqFields = {};
@@ -144,10 +144,10 @@ router.post(
 			//Appending the user ID at the back of email link to make it unique
 			const uniqueString = user.id;
 			sendEmail(email, uniqueString, 0);
-			res.send("user added");
+			res.send('user added');
 		} catch (err) {
 			console.log(err.message);
-			res.status(500).send("Server Error");
+			res.status(500).send('Server Error');
 		}
 	}
 );
@@ -155,7 +155,7 @@ router.post(
 //route    POST api/user/social
 //desc     Social Login
 //@access  Public
-router.post("/social", async (req, res) => {
+router.post('/social', async (req, res) => {
 	//get email and name from facebook or google
 	const { name, email, avatar } = req.body;
 	try {
@@ -167,7 +167,7 @@ router.post("/social", async (req, res) => {
 			user = new User({
 				name,
 				email,
-				confirmed,
+				confirmed
 			});
 			await user.save();
 
@@ -189,25 +189,28 @@ router.post("/social", async (req, res) => {
 			const finalform = new FormSubmit(formFields);
 			await finalform.save();
 
-			const steps = await Step.find();
+			let steps = await Step.find();
 			const progressFields = {};
 			progressFields.progressArray = [];
 			progressFields.user = user.id;
 
-			steps.forEach((e) => {
+			steps.forEach((k) => {
+				let e = k.toObject();
 				const final = {};
-				final.total = e.courses.length;
-				final.sum = 0;
+				final.data = [];
+				final.data = e.data;
+				final.total = e.data.length;
 				final.percentage = 0;
 				final.step = e.name;
-				final.courses = [];
-				e.courses.forEach((k) => {
-					const courses = {};
-					courses.course = k.name;
-					final.courses.push(courses);
+				final.videos = [];
+				e.data.forEach((k) => {
+					val = {};
+					val.watchPercentage = 0;
+					final.videos.push(val);
 				});
 				progressFields.progressArray.push(final);
 			});
+
 			const progress = new Progress(progressFields);
 			await progress.save();
 
@@ -244,14 +247,14 @@ router.post("/social", async (req, res) => {
 
 		const payload = {
 			user: {
-				id: user.id,
-			},
+				id: user.id
+			}
 		};
 		jwt.sign(
 			payload,
-			config.get("jwtSecret"),
+			config.get('jwtSecret'),
 			{
-				expiresIn: 360000,
+				expiresIn: 360000
 			},
 			(err, token) => {
 				if (err) throw err;
@@ -260,11 +263,11 @@ router.post("/social", async (req, res) => {
 		);
 	} catch (err) {
 		console.log(err.message);
-		res.status(500).send("Server Error");
+		res.status(500).send('Server Error');
 	}
 });
 
-router.delete("/delete", async (req, res) => {
+router.delete('/delete', async (req, res) => {
 	const { email } = req.body;
 	try {
 		let user = await User.findOne({ email });
@@ -277,7 +280,7 @@ router.delete("/delete", async (req, res) => {
 			await FormSubmit.deleteOne({ user: user.id });
 			await Progress.deleteOne({ user: user.id });
 			res.send(`${email} deleted`);
-		} else res.send("no such user");
+		} else res.send('no such user');
 	} catch (err) {
 		res.status(500).send(err);
 	}
@@ -289,42 +292,39 @@ const sendEmail = async (email, uniqueString, reset) => {
 		//Account details of the sender
 		//const accessToken = await oAuth2Client.getAccessToken();
 		const transporter = nodemailer.createTransport({
-			service: "gmail",
+			service: 'gmail',
 			secure: true,
-			pool: "true",
+			pool: 'true',
 			auth: {
-				type: "OAuth2",
-				user: "adarsh7506774609@gmail.com",
+				type: 'OAuth2',
+				user: 'adarsh7506774609@gmail.com',
 				clientId: cid,
 				clientSecret: csec,
-				refreshToken: refreshToken,
-			},
+				refreshToken: refreshToken
+			}
 		});
 		//Email sender
 		const mailOptions1 = {
-			from: "Saorsa <adarsh7506774609@gmail.com>",
+			from: 'Saorsa <adarsh7506774609@gmail.com>',
 			to: email,
-			subject: "Verification Email",
-			html: `Press <button><a href=https://mighty-bastion-04883.herokuapp.com/api/user/verify/${uniqueString}>here</a></button> to verify your account`,
+			subject: 'Verification Email',
+			html: `Press <button><a href=https://mighty-bastion-04883.herokuapp.com/api/user/verify/${uniqueString}>here</a></button> to verify your account`
 		};
 
 		const mailOptions2 = {
-			from: "Saorsa <adarsh7506774609@gmail.com>",
+			from: 'Saorsa <adarsh7506774609@gmail.com>',
 			to: email,
-			subject: "Reset Password",
-			html: `Press <button><a href=https://mighty-bastion-04883.herokuapp.com/api/user/forgot/${uniqueString}>here</a></button> to verify your account and reset the passwprd`,
+			subject: 'Reset Password',
+			html: `Press <button><a href=https://mighty-bastion-04883.herokuapp.com/api/user/forgot/${uniqueString}>here</a></button> to verify your account and reset the passwprd`
 		};
 
-		await transporter.sendMail(
-			!reset ? mailOptions1 : mailOptions2,
-			(error, info) => {
-				if (error) {
-					console.log(error);
-				} else {
-					console.log("Email Sent: " + info.response);
-				}
+		await transporter.sendMail(!reset ? mailOptions1 : mailOptions2, (error, info) => {
+			if (error) {
+				console.log(error);
+			} else {
+				console.log('Email Sent: ' + info.response);
 			}
-		);
+		});
 	} catch (err) {
 		console.log(err);
 	}
@@ -333,56 +333,50 @@ const sendEmail = async (email, uniqueString, reset) => {
 //route    GET api/user/forgot/:uniqueString
 //desc     Send verification link
 //@access  Public
-router.get("/forgot/:uniqueString", async (req, res) => {
+router.get('/forgot/:uniqueString', async (req, res) => {
 	try {
 		const token = req.params.uniqueString;
 		const user = await User.findOne({ email: token.email });
-		let base64Url = token.split(".")[1]; // token you get
-		let base64 = base64Url.replace("-", "+").replace("_", "/");
-		let decodedData = JSON.parse(
-			Buffer.from(base64, "base64").toString("binary")
-		);
+		let base64Url = token.split('.')[1]; // token you get
+		let base64 = base64Url.replace('-', '+').replace('_', '/');
+		let decodedData = JSON.parse(Buffer.from(base64, 'base64').toString('binary'));
 
 		const salt = await bcrypt.genSalt(10);
 		const password = await bcrypt.hash(decodedData.password, salt);
 
-		await User.updateOne(
-			{ email: decodedData.email },
-			{ password },
-			{ upsert: true }
-		);
-		res.redirect("https://saorsawellbeing.herokuapp.com/login");
+		await User.updateOne({ email: decodedData.email }, { password }, { upsert: true });
+		res.redirect('https://saorsawellbeing.herokuapp.com/login');
 	} catch (err) {
-		res.status(500).send("Server Error");
+		res.status(500).send('Server Error');
 	}
 });
 
 //route    GET api/user/verify/:uniqueString
 //desc     Send verification link
 //@access  Public
-router.get("/verify/:uniqueString", async (req, res) => {
+router.get('/verify/:uniqueString', async (req, res) => {
 	try {
 		const user = await User.findOne({
-			_id: req.params.uniqueString,
+			_id: req.params.uniqueString
 		});
 		user.confirmed = true;
 		user.save();
-		res.redirect("https://saorsawellbeing.herokuapp.com/login");
+		res.redirect('https://saorsawellbeing.herokuapp.com/login');
 	} catch (err) {
-		res.status(500).send("Server Error");
+		res.status(500).send('Server Error');
 	}
 });
 
 //route    POST api/user/resend
 //desc     Resend verification link to given email
 //@access  Public
-router.post("/resend", async (req, res) => {
+router.post('/resend', async (req, res) => {
 	//taking email from user
 	const { email } = req.body;
 	try {
 		const user = await User.findOne({ email });
 		sendEmail(user.email, user.id, 0);
-		res.send("Email Sent");
+		res.send('Email Sent');
 	} catch (err) {
 		res.send(err);
 	}
@@ -391,18 +385,14 @@ router.post("/resend", async (req, res) => {
 //route    POST api/user/forgot
 //desc     Forgot password
 //@access  Public
-router.post("/forgot", async (req, res) => {
+router.post('/forgot', async (req, res) => {
 	//taking email from user
 	const { email, password } = req.body;
 	try {
 		const user = await User.findOne({ email });
-		const token = jwt.sign(
-			{ email, password },
-			process.env.RESET_PASSWORD_KEY,
-			{ expiresIn: "20m" }
-		);
+		const token = jwt.sign({ email, password }, process.env.RESET_PASSWORD_KEY, { expiresIn: '20m' });
 		sendEmail(user.email, token, 1);
-		res.send("Email Sent");
+		res.send('Email Sent');
 	} catch (err) {
 		res.send(err.message);
 	}
@@ -411,9 +401,9 @@ router.post("/forgot", async (req, res) => {
 //route    GET api/user/all
 //desc     Get all Users
 //@access  Public
-router.get("/all", async (req, res) => {
+router.get('/all', async (req, res) => {
 	try {
-		const users = await User.find().select("-password");
+		const users = await User.find().select('-password');
 		res.send(users);
 	} catch (err) {
 		res.send(err);
