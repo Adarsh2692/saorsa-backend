@@ -46,14 +46,8 @@ router.put('/', auth, async (req, res) => {
 		let progress = await Progress.findOne({ user: req.user.id });
 		progress.progressArray.forEach((s) => {
 			if (s.step == step) {
-				// s.courses.forEach((c) => {
-				// 	if (c.done == 0 && c.course == course) {
-				// 		s.sum = s.sum + 1;
-				// 		s.percentage = s.sum * 100 / s.total;
-				// 		c.done = 1;
-				// 	}
-				// });
-				s.videos[num].watchPercentage = val;
+				let p=s.videos[num].watchPercentage;
+				s.videos[num].watchPercentage = (Number(p)<Number(val))?val:p;
 				let sum = 0;
 				s.videos.forEach((v) => {
 					sum += Number(v.watchPercentage);
